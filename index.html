@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deret Geometri – Matematika Diskrit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0d14;
+      --surface: #14141f;
+      --card: #1a1a2e;
+      --border: #2a2a45;
+      --accent: #7c3aed;
+      --accent2: #06b6d4;
+      --accent3: #f59e0b;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --code: #1e1e30;
+      --glow: rgba(124,58,237,0.3);
+    }
+    [data-theme="light"] {
+      --bg: #f8f7ff;
+      --surface: #ffffff;
+      --card: #eef0ff;
+      --border: #c9c3f5;
+      --accent: #6d28d9;
+      --accent2: #0891b2;
+      --accent3: #d97706;
+      --text: #1e1b4b;
+      --muted: #64748b;
+      --code: #e8e5ff;
+      --glow: rgba(109,40,217,0.15);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.4s, color 0.4s;
+    }
+
+    /* HEADER */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      backdrop-filter: blur(12px);
+    }
+    .logo {
+      font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .logo span { color: var(--accent); }
+    .badge {
+      background: var(--accent); color: #fff;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 1px;
+      padding: 2px 8px; border-radius: 20px; text-transform: uppercase;
+    }
+    .theme-btn {
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; border-radius: 50px;
+      padding: 0.45rem 1rem; font-size: 0.85rem; font-family: 'Syne', sans-serif;
+      display: flex; align-items: center; gap: 0.4rem;
+      transition: all 0.2s;
+    }
+    .theme-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      text-align: center; padding: 4rem 2rem 3rem;
+      background: radial-gradient(ellipse 60% 40% at 50% 0%, var(--glow), transparent);
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800; line-height: 1.1;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p { color: var(--muted); margin-top: 0.8rem; font-size: 1rem; max-width: 550px; margin-inline: auto; }
+
+    /* NAV TABS */
+    .tabs {
+      display: flex; justify-content: center; gap: 0.5rem;
+      padding: 0.5rem 2rem 2rem; flex-wrap: wrap;
+    }
+    .tab {
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--muted); padding: 0.5rem 1.2rem; border-radius: 50px;
+      cursor: pointer; font-family: 'Syne', sans-serif; font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .tab.active, .tab:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* MAIN CONTENT */
+    main { max-width: 900px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+    .section { display: none; animation: fadeUp 0.4s ease; }
+    .section.active { display: block; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* CARD */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem;
+    }
+    .card h2 {
+      font-size: 1.3rem; font-weight: 800; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .card h2 .icon { font-size: 1.4rem; }
+    .card p, .card li { color: var(--muted); line-height: 1.7; font-size: 0.95rem; }
+    .card ul { padding-left: 1.4rem; margin-top: 0.5rem; }
+    .card ul li { margin-bottom: 0.3rem; }
+
+    /* FORMULA BOX */
+    .formula {
+      background: var(--code); border-left: 3px solid var(--accent);
+      border-radius: 10px; padding: 1rem 1.3rem; margin: 1rem 0;
+      font-family: 'Space Mono', monospace; font-size: 0.9rem; color: var(--accent2);
+      overflow-x: auto;
+    }
+    .formula strong { color: var(--accent3); }
+
+    /* HIGHLIGHT */
+    .highlight { color: var(--accent); font-weight: 700; }
+    .highlight2 { color: var(--accent2); font-weight: 700; }
+    .highlight3 { color: var(--accent3); font-weight: 700; }
+
+    /* KALKULATOR */
+    .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem; }
+    @media(max-width: 500px) { .calc-grid { grid-template-columns: 1fr; } }
+
+    .input-group label {
+      display: block; font-size: 0.8rem; color: var(--muted);
+      margin-bottom: 0.35rem; font-weight: 600; letter-spacing: 0.5px;
+    }
+    .input-group input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); padding: 0.6rem 0.9rem; border-radius: 10px;
+      font-family: 'Space Mono', monospace; font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+    .input-group input:focus { outline: none; border-color: var(--accent); }
+
+    .btn-calc {
+      width: 100%; background: var(--accent); color: #fff;
+      border: none; padding: 0.75rem; border-radius: 12px;
+      font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-calc:hover { opacity: 0.9; }
+    .btn-calc:active { transform: scale(0.98); }
+
+    .result-box {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.2rem; margin-top: 1.2rem;
+      display: none;
+    }
+    .result-box.show { display: block; animation: fadeUp 0.3s ease; }
+    .result-title { font-size: 0.75rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .result-value { font-family: 'Space Mono', monospace; font-size: 1.4rem; color: var(--accent2); font-weight: 700; }
+    .result-steps { margin-top: 1rem; }
+    .step {
+      font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--muted);
+      padding: 0.3rem 0; border-bottom: 1px solid var(--border);
+    }
+    .step:last-child { border-bottom: none; }
+
+    /* SEQUENCE VISUAL */
+    .seq-row {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0;
+    }
+    .seq-item {
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 0.5rem 0.9rem; border-radius: 10px;
+      font-family: 'Space Mono', monospace; font-size: 0.85rem;
+      transition: all 0.2s; cursor: default;
+      position: relative;
+    }
+    .seq-item:hover { border-color: var(--accent); color: var(--accent); }
+    .seq-item .n { font-size: 0.6rem; color: var(--muted); display: block; text-align: center; }
+
+    /* TABEL */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th {
+      background: var(--bg); color: var(--accent); font-family: 'Space Mono', monospace;
+      padding: 0.7rem 1rem; text-align: left; border-bottom: 2px solid var(--border);
+    }
+    td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border); color: var(--muted); }
+    tr:hover td { background: var(--bg); color: var(--text); }
+
+    /* QUIZ */
+    .quiz-q { font-size: 1.05rem; font-weight: 600; margin-bottom: 1rem; }
+    .quiz-opts { display: flex; flex-direction: column; gap: 0.6rem; }
+    .quiz-opt {
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 0.7rem 1.1rem; border-radius: 10px; cursor: pointer;
+      font-family: 'Syne', sans-serif; font-size: 0.9rem; color: var(--text);
+      transition: all 0.2s;
+    }
+    .quiz-opt:hover { border-color: var(--accent); color: var(--accent); }
+    .quiz-opt.correct { background: rgba(16,185,129,0.15); border-color: #10b981; color: #10b981; }
+    .quiz-opt.wrong { background: rgba(239,68,68,0.15); border-color: #ef4444; color: #ef4444; }
+    .quiz-feedback { margin-top: 0.8rem; font-size: 0.9rem; font-weight: 600; }
+    .quiz-next {
+      margin-top: 1rem; background: var(--card); border: 1px solid var(--border);
+      color: var(--text); padding: 0.5rem 1.2rem; border-radius: 50px;
+      cursor: pointer; font-family: 'Syne', sans-serif; font-size: 0.85rem;
+      display: none;
+    }
+    .quiz-next.show { display: inline-block; }
+    .quiz-next:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .score-bar { font-size: 1.1rem; font-weight: 700; color: var(--accent3); margin-top: 0.5rem; }
+
+    /* INFO CHIP */
+    .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; }
+    .chip {
+      background: var(--bg); border: 1px solid var(--border);
+      font-size: 0.75rem; color: var(--muted); padding: 0.25rem 0.75rem; border-radius: 20px;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center; padding: 2rem; font-size: 0.8rem; color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span>∑</span> Deret Geometri <span class="badge">MatDis</span>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
+</header>
+
+<div class="hero">
+  <h1>Deret Geometri</h1>
+  <p>Matematika Diskrit — pelajari konsep, rumus, dan latihan soal deret geometri dengan mudah.</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showSection('materi', this)">📚 Materi</button>
+  <button class="tab" onclick="showSection('kalkulator', this)">🧮 Kalkulator</button>
+  <button class="tab" onclick="showSection('contoh', this)">📝 Contoh Soal</button>
+  <button class="tab" onclick="showSection('tabel', this)">📊 Tabel</button>
+  <button class="tab" onclick="showSection('kuis', this)">🎯 Kuis</button>
+</div>
+
+<main>
+
+  <!-- MATERI -->
+  <div class="section active" id="materi">
+    <div class="card">
+      <h2><span class="icon">📖</span> Apa itu Deret Geometri?</h2>
+      <p>Deret Geometri adalah <span class="highlight">penjumlahan</span> dari suku-suku <strong>barisan geometri</strong>, yaitu barisan yang setiap sukunya diperoleh dengan mengalikan suku sebelumnya dengan bilangan tetap yang disebut <span class="highlight2">rasio (r)</span>.</p>
+      <div class="chips">
+        <span class="chip">Barisan → a, ar, ar², ar³, ...</span>
+        <span class="chip">r = rasio konstan</span>
+        <span class="chip">r ≠ 0</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">📐</span> Rumus Penting</h2>
+      <p><strong>1. Suku ke-n (Uₙ)</strong></p>
+      <div class="formula"><strong>Uₙ</strong> = a · r<sup>(n-1)</sup></div>
+      <p><strong>2. Jumlah n suku pertama (Sₙ)</strong></p>
+      <div class="formula">
+        Jika r ≠ 1 → <strong>Sₙ</strong> = a · (rⁿ − 1) / (r − 1)<br/>
+        Jika r = 1  → <strong>Sₙ</strong> = n · a
+      </div>
+      <p><strong>3. Jumlah deret tak hingga (S∞)</strong> — hanya untuk |r| &lt; 1</p>
+      <div class="formula"><strong>S∞</strong> = a / (1 − r)</div>
+      <p style="margin-top:0.5rem"><span class="highlight3">Keterangan:</span></p>
+      <ul>
+        <li><span class="highlight">a</span> = suku pertama</li>
+        <li><span class="highlight2">r</span> = rasio (perbandingan dua suku berurutan)</li>
+        <li><span class="highlight3">n</span> = banyak suku</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">💡</span> Cara Mencari Rasio (r)</h2>
+      <div class="formula"><strong>r</strong> = U₂ / U₁ = U₃ / U₂ = Uₙ / Uₙ₋₁</div>
+      <p>Rasio selalu konstan di setiap pasang suku berurutan.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🔑</span> Sifat-Sifat</h2>
+      <ul>
+        <li>Jika <span class="highlight2">r > 1</span>: suku terus <strong>membesar</strong> (divergen)</li>
+        <li>Jika <span class="highlight2">0 &lt; r &lt; 1</span>: suku terus <strong>mengecil</strong> (konvergen)</li>
+        <li>Jika <span class="highlight2">r &lt; 0</span>: suku <strong>berganti tanda</strong> (alternating)</li>
+        <li>Deret tak hingga konvergen hanya jika <span class="highlight">|r| &lt; 1</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- KALKULATOR -->
+  <div class="section" id="kalkulator">
+    <div class="card">
+      <h2><span class="icon">🔢</span> Hitung Suku ke-n</h2>
+      <div class="calc-grid">
+        <div class="input-group">
+          <label>Suku Pertama (a)</label>
+          <input type="number" id="c1a" placeholder="contoh: 2" />
+        </div>
+        <div class="input-group">
+          <label>Rasio (r)</label>
+          <input type="number" id="c1r" placeholder="contoh: 3" />
+        </div>
+        <div class="input-group">
+          <label>Suku ke- (n)</label>
+          <input type="number" id="c1n" placeholder="contoh: 5" />
+        </div>
+      </div>
+      <button class="btn-calc" onclick="hitungSuku()">Hitung Suku ke-n</button>
+      <div class="result-box" id="res1">
+        <div class="result-title">Hasil</div>
+        <div class="result-value" id="res1val"></div>
+        <div class="result-steps" id="res1steps"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">➕</span> Hitung Jumlah n Suku (Sₙ)</h2>
+      <div class="calc-grid">
+        <div class="input-group">
+          <label>Suku Pertama (a)</label>
+          <input type="number" id="c2a" placeholder="contoh: 2" />
+        </div>
+        <div class="input-group">
+          <label>Rasio (r)</label>
+          <input type="number" id="c2r" placeholder="contoh: 3" />
+        </div>
+        <div class="input-group">
+          <label>Banyak Suku (n)</label>
+          <input type="number" id="c2n" placeholder="contoh: 4" />
+        </div>
+      </div>
+      <button class="btn-calc" onclick="hitungJumlah()">Hitung Jumlah</button>
+      <div class="result-box" id="res2">
+        <div class="result-title">Hasil</div>
+        <div class="result-value" id="res2val"></div>
+        <div class="result-steps" id="res2steps"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">∞</span> Hitung Jumlah Tak Hingga (S∞)</h2>
+      <p style="margin-bottom:1rem">Hanya berlaku jika <span class="highlight">|r| &lt; 1</span></p>
+      <div class="calc-grid">
+        <div class="input-group">
+          <label>Suku Pertama (a)</label>
+          <input type="number" id="c3a" placeholder="contoh: 6" />
+        </div>
+        <div class="input-group">
+          <label>Rasio (r), |r| &lt; 1</label>
+          <input type="number" id="c3r" placeholder="contoh: 0.5" step="0.01" />
+        </div>
+      </div>
+      <button class="btn-calc" onclick="hitungInfinite()">Hitung S∞</button>
+      <div class="result-box" id="res3">
+        <div class="result-title">Hasil</div>
+        <div class="result-value" id="res3val"></div>
+        <div class="result-steps" id="res3steps"></div>
+      </div>
+    </div>
+
+    <!-- Visualisasi barisan -->
+    <div class="card">
+      <h2><span class="icon">👁</span> Visualisasi Barisan</h2>
+      <div class="calc-grid">
+        <div class="input-group">
+          <label>Suku Pertama (a)</label>
+          <input type="number" id="va" placeholder="2" />
+        </div>
+        <div class="input-group">
+          <label>Rasio (r)</label>
+          <input type="number" id="vr" placeholder="2" />
+        </div>
+      </div>
+      <button class="btn-calc" onclick="visualize()">Tampilkan 8 Suku</button>
+      <div class="seq-row" id="seqRow"></div>
+    </div>
+  </div>
+
+  <!-- CONTOH SOAL -->
+  <div class="section" id="contoh">
+    <div class="card">
+      <h2><span class="icon">📝</span> Contoh 1 — Suku ke-n</h2>
+      <p>Barisan geometri: <span class="highlight">2, 6, 18, 54, ...</span></p>
+      <p>Tentukan suku ke-6!</p>
+      <div class="formula">
+        a = 2, r = 6/2 = <strong>3</strong><br/>
+        U₆ = 2 × 3<sup>(6−1)</sup> = 2 × 3⁵ = 2 × 243 = <strong>486</strong>
+      </div>
+      <p>Jadi suku ke-6 adalah <span class="highlight2">486</span></p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">📝</span> Contoh 2 — Jumlah Suku</h2>
+      <p>Barisan geometri: <span class="highlight">3, 6, 12, 24, ...</span></p>
+      <p>Hitung jumlah 5 suku pertama!</p>
+      <div class="formula">
+        a = 3, r = 2, n = 5<br/>
+        S₅ = 3 × (2⁵ − 1) / (2 − 1)<br/>
+        S₅ = 3 × (32 − 1) / 1<br/>
+        S₅ = 3 × 31 = <strong>93</strong>
+      </div>
+      <p>Jadi jumlah 5 suku pertama adalah <span class="highlight2">93</span></p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">📝</span> Contoh 3 — Deret Tak Hingga</h2>
+      <p>Diketahui: <span class="highlight">a = 8, r = 1/2</span></p>
+      <p>Hitung jumlah deret tak hingga!</p>
+      <div class="formula">
+        |r| = 0.5 &lt; 1 → konvergen ✓<br/>
+        S∞ = 8 / (1 − 0.5)<br/>
+        S∞ = 8 / 0.5 = <strong>16</strong>
+      </div>
+      <p>Jadi S∞ = <span class="highlight2">16</span></p>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">📝</span> Contoh 4 — Mencari Rasio</h2>
+      <p>Suku pertama barisan geometri adalah <span class="highlight">4</span> dan suku ke-4 adalah <span class="highlight">108</span>. Tentukan rasio!</p>
+      <div class="formula">
+        U₄ = a · r³<br/>
+        108 = 4 · r³<br/>
+        r³ = 27<br/>
+        r = <strong>3</strong>
+      </div>
+      <p>Jadi rasio barisan tersebut adalah <span class="highlight2">3</span></p>
+    </div>
+  </div>
+
+  <!-- TABEL -->
+  <div class="section" id="tabel">
+    <div class="card">
+      <h2><span class="icon">📊</span> Tabel Perbandingan</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Properti</th>
+              <th>Barisan Geometri</th>
+              <th>Deret Geometri</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Definisi</td><td>Urutan suku: a, ar, ar², ...</td><td>Penjumlahan suku: a + ar + ar² + ...</td></tr>
+            <tr><td>Rumus suku ke-n</td><td>Uₙ = a·rⁿ⁻¹</td><td>—</td></tr>
+            <tr><td>Rumus jumlah</td><td>—</td><td>Sₙ = a(rⁿ−1)/(r−1)</td></tr>
+            <tr><td>Tak hingga</td><td>Tidak terbatas</td><td>S∞ = a/(1−r) jika |r|&lt;1</td></tr>
+            <tr><td>Konvergen</td><td>Jika |r| &lt; 1</td><td>Jika |r| &lt; 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">📈</span> Tabel Contoh Nilai</h2>
+      <p style="margin-bottom:1rem">Barisan dengan a = 2, r = 3</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>n</th><th>Uₙ = 2 · 3ⁿ⁻¹</th><th>Sₙ (jumlah)</th></tr>
+          </thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- KUIS -->
+  <div class="section" id="kuis">
+    <div class="card">
+      <h2><span class="icon">🎯</span> Uji Pemahaman</h2>
+      <div class="score-bar" id="scoreBar">Skor: 0 / 0</div>
+      <div style="margin-top:1.2rem" id="quizArea"></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>© 2025 Deret Geometri · Matematika Diskrit · Dibuat dengan ❤️</footer>
+
+<script>
+  // === THEME ===
+  function toggleTheme() {
+    const html = document.documentElement;
+    const btn = document.getElementById('themeBtn');
+    if (html.dataset.theme === 'dark') {
+      html.dataset.theme = 'light';
+      btn.textContent = '☀️ Light';
+    } else {
+      html.dataset.theme = 'dark';
+      btn.textContent = '🌙 Dark';
+    }
+  }
+
+  // === TABS ===
+  function showSection(id, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active');
+    if (id === 'tabel') buildTable();
+    if (id === 'kuis') initQuiz();
+  }
+
+  // === KALKULATOR ===
+  function hitungSuku() {
+    const a = parseFloat(document.getElementById('c1a').value);
+    const r = parseFloat(document.getElementById('c1r').value);
+    const n = parseInt(document.getElementById('c1n').value);
+    if (isNaN(a) || isNaN(r) || isNaN(n) || n < 1) return alert('Isi semua nilai dengan benar!');
+    const result = a * Math.pow(r, n - 1);
+    const box = document.getElementById('res1');
+    document.getElementById('res1val').textContent = `U${n} = ${fmt(result)}`;
+    document.getElementById('res1steps').innerHTML =
+      `<div class="step">Rumus: Uₙ = a · r^(n−1)</div>
+       <div class="step">U${n} = ${a} × ${r}^(${n}−1)</div>
+       <div class="step">U${n} = ${a} × ${r}^${n-1}</div>
+       <div class="step">U${n} = ${a} × ${fmt(Math.pow(r, n-1))} = <strong>${fmt(result)}</strong></div>`;
+    box.classList.add('show');
+  }
+
+  function hitungJumlah() {
+    const a = parseFloat(document.getElementById('c2a').value);
+    const r = parseFloat(document.getElementById('c2r').value);
+    const n = parseInt(document.getElementById('c2n').value);
+    if (isNaN(a) || isNaN(r) || isNaN(n) || n < 1) return alert('Isi semua nilai dengan benar!');
+    let result, steps;
+    if (r === 1) {
+      result = n * a;
+      steps = `<div class="step">r = 1, pakai rumus Sₙ = n × a</div>
+               <div class="step">S${n} = ${n} × ${a} = <strong>${fmt(result)}</strong></div>`;
+    } else {
+      result = a * (Math.pow(r, n) - 1) / (r - 1);
+      steps = `<div class="step">Rumus: Sₙ = a(rⁿ−1)/(r−1)</div>
+               <div class="step">S${n} = ${a} × (${r}^${n} − 1) / (${r} − 1)</div>
+               <div class="step">S${n} = ${a} × (${fmt(Math.pow(r,n))} − 1) / ${r-1}</div>
+               <div class="step">S${n} = ${a} × ${fmt(Math.pow(r,n)-1)} / ${r-1} = <strong>${fmt(result)}</strong></div>`;
+    }
+    const box = document.getElementById('res2');
+    document.getElementById('res2val').textContent = `S${n} = ${fmt(result)}`;
+    document.getElementById('res2steps').innerHTML = steps;
+    box.classList.add('show');
+  }
+
+  function hitungInfinite() {
+    const a = parseFloat(document.getElementById('c3a').value);
+    const r = parseFloat(document.getElementById('c3r').value);
+    if (isNaN(a) || isNaN(r)) return alert('Isi semua nilai!');
+    if (Math.abs(r) >= 1) return alert('|r| harus lebih kecil dari 1 untuk deret konvergen!');
+    const result = a / (1 - r);
+    const box = document.getElementById('res3');
+    document.getElementById('res3val').textContent = `S∞ = ${fmt(result)}`;
+    document.getElementById('res3steps').innerHTML =
+      `<div class="step">|r| = ${Math.abs(r)} &lt; 1 → konvergen ✓</div>
+       <div class="step">S∞ = a / (1 − r)</div>
+       <div class="step">S∞ = ${a} / (1 − ${r})</div>
+       <div class="step">S∞ = ${a} / ${1-r} = <strong>${fmt(result)}</strong></div>`;
+    box.classList.add('show');
+  }
+
+  function visualize() {
+    const a = parseFloat(document.getElementById('va').value) || 2;
+    const r = parseFloat(document.getElementById('vr').value) || 2;
+    const row = document.getElementById('seqRow');
+    row.innerHTML = '';
+    for (let i = 1; i <= 8; i++) {
+      const val = a * Math.pow(r, i - 1);
+      const div = document.createElement('div');
+      div.className = 'seq-item';
+      div.innerHTML = `<span class="n">n=${i}</span>${fmt(val)}`;
+      row.appendChild(div);
+    }
+  }
+
+  function fmt(n) {
+    if (Number.isInteger(n)) return n.toString();
+    return parseFloat(n.toFixed(4)).toString();
+  }
+
+  // === TABEL ===
+  function buildTable() {
+    const tbody = document.getElementById('tblBody');
+    if (tbody.innerHTML !== '') return;
+    let sum = 0;
+    for (let n = 1; n <= 7; n++) {
+      const un = 2 * Math.pow(3, n - 1);
+      sum += un;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${n}</td><td>${fmt(un)}</td><td>${fmt(sum)}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  // === KUIS ===
+  const questions = [
+    {
+      q: "Diketahui a = 3, r = 2. Berapa nilai U₄?",
+      opts: ["12", "24", "48", "96"],
+      ans: 1,
+      exp: "U₄ = 3 × 2³ = 3 × 8 = 24 ✓"
+    },
+    {
+      q: "Barisan: 5, 10, 20, 40, ... Berapa rasionya?",
+      opts: ["5", "2", "4", "10"],
+      ans: 1,
+      exp: "r = 10/5 = 2 ✓"
+    },
+    {
+      q: "Jumlah 4 suku pertama dari a=1, r=3 adalah?",
+      opts: ["30", "40", "80", "120"],
+      ans: 1,
+      exp: "S₄ = 1×(3⁴−1)/(3−1) = 80/2 = 40 ✓"
+    },
+    {
+      q: "Deret tak hingga a=10, r=0.5. Nilai S∞?",
+      opts: ["15", "20", "25", "30"],
+      ans: 1,
+      exp: "S∞ = 10/(1−0.5) = 10/0.5 = 20 ✓"
+    },
+    {
+      q: "Jika U₁ = 2 dan U₄ = 54, maka r = ?",
+      opts: ["2", "3", "4", "6"],
+      ans: 1,
+      exp: "54 = 2×r³ → r³ = 27 → r = 3 ✓"
+    },
+    {
+      q: "Barisan mana yang merupakan barisan geometri?",
+      opts: ["1, 3, 5, 7", "2, 4, 8, 16", "1, 2, 3, 5", "3, 6, 9, 12"],
+      ans: 1,
+      exp: "2, 4, 8, 16 → r = 4/2 = 2 (konstan) ✓"
+    },
+    {
+      q: "Deret tak hingga konvergen jika?",
+      opts: ["|r| > 1", "|r| = 1", "|r| < 1", "r = 0"],
+      ans: 2,
+      exp: "Konvergen hanya jika |r| < 1 ✓"
+    }
+  ];
+
+  let qi = 0, score = 0, answered = false;
+
+  function initQuiz() {
+    qi = 0; score = 0;
+    renderQuestion();
+    updateScore();
+  }
+
+  function renderQuestion() {
+    const area = document.getElementById('quizArea');
+    if (qi >= questions.length) {
+      area.innerHTML = `<div style="text-align:center;padding:2rem">
+        <div style="font-size:3rem">🎉</div>
+        <div style="font-size:1.4rem;font-weight:800;margin:1rem 0">Selesai!</div>
+        <div style="color:var(--muted)">Skor akhir: ${score}/${questions.length}</div>
+        <button class="btn-calc" style="margin-top:1.5rem;max-width:200px" onclick="initQuiz()">Ulangi Kuis</button>
+      </div>`;
+      return;
+    }
+    answered = false;
+    const q = questions[qi];
+    area.innerHTML = `
+      <div class="quiz-q">${qi+1}/${questions.length}. ${q.q}</div>
+      <div class="quiz-opts">
+        ${q.opts.map((o, i) => `<button class="quiz-opt" onclick="answer(${i})">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="qfb"></div>
+      <button class="quiz-next" id="qnext" onclick="nextQ()">Soal Berikutnya →</button>
+    `;
+  }
+
+  function answer(i) {
+    if (answered) return;
+    answered = true;
+    const q = questions[qi];
+    const opts = document.querySelectorAll('.quiz-opt');
+    const fb = document.getElementById('qfb');
+    opts[i].classList.add(i === q.ans ? 'correct' : 'wrong');
+    opts[q.ans].classList.add('correct');
+    if (i === q.ans) { score++; fb.style.color='#10b981'; fb.textContent = '✓ Benar! ' + q.exp; }
+    else { fb.style.color='#ef4444'; fb.textContent = '✗ Salah. ' + q.exp; }
+    updateScore();
+    const nxt = document.getElementById('qnext');
+    nxt.classList.add('show');
+  }
+
+  function nextQ() { qi++; renderQuestion(); }
+  function updateScore() { document.getElementById('scoreBar').textContent = `Skor: ${score} / ${questions.length}`; }
+</script>
+</body>
+</html>
